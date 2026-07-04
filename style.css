@@ -1,17 +1,19 @@
 .print-area {
   white-space: pre-wrap;
   font-family: Consolas, monospace;
+  font-size: clamp(0.75rem, 2.5vw, 0.9rem);
 }
 
 .hidden-select {
   display: none;
 }
 
+/* ===== select-tiles 觸控友善版 ===== */
 .select-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
-  gap: 0.45rem;
-  margin-top: 0.35rem;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 .select-tile {
@@ -19,11 +21,13 @@
   background: #ffffff;
   color: #111827;
   border-radius: 0.5rem;
-  padding: 0.4rem 0.55rem;
+  padding: 0.55rem 0.5rem;
   font-size: 0.9rem;
-  line-height: 1.2;
+  line-height: 1.3;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .select-tile:hover {
@@ -53,5 +57,79 @@
   border-radius: 0.55rem;
   background: #fff5f5;
   padding: 0.4rem;
+}
+
+/* ===== 手機專用強化 ===== */
+@media (max-width: 640px) {
+
+  /* 所有輸入框/下拉觸控區加大 */
+  input, select, textarea, button {
+    font-size: 16px !important; /* 防止 iOS 自動縮放 */
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    min-height: 44px;
+    padding: 0.5rem 0.6rem !important;
+  }
+
+  input.w-20 {
+    width: 5rem !important;
+  }
+
+  /* select-tiles 在手機加大觸控面積 */
+  .select-tiles {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.55rem;
+  }
+
+  .select-tile {
+    padding: 0.7rem 0.4rem;
+    font-size: 0.95rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 表格水平捲動 */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-wrap table {
+    min-width: 520px;
+  }
+
+  /* 按鈕全寬 */
+  .flex-col.sm\\:flex-row button {
+    width: 100%;
+  }
+
+  /* FSI 建議選單觸控友善 */
+  .fsiSuggestionItem {
+    padding: 0.65rem 0.75rem !important;
+    font-size: 1rem !important;
+  }
+
+  /* 區塊內間距加大 */
+  .question-grid > div {
+    padding-bottom: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* 輸出區字體放大 */
+  .print-area {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .select-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
