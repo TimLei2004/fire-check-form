@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FS251 消防年檢交互填表系統</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="report1.css">
+</head>
+<body class="bg-gray-100 p-4 md:p-8 max-w-6xl mx-auto">
+<div class="bg-white rounded-xl shadow p-6 mb-6">
+<h1 class="text-2xl font-bold text-red-700 border-b pb-3 mb-4">FS251 消防裝置年檢記錄表</h1>
+<!-- 頂部基礎資訊 -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+<div>
+<label class="block font-medium mb-1">大廈名稱</label>
+<input id="building" type="text" class="w-full border p-2 rounded" placeholder="請輸入大廈名稱">
+</div>
+<div>
+<label class="block font-medium mb-1">年檢日期</label>
+<input id="checkDate" type="text" class="w-full border p-2 rounded" placeholder="例：2026-07-04">
+</div>
+</div>
+
+<!-- 設備分類說明 -->
+<div class="bg-gray-50 p-3 rounded text-sm mb-6">
+<span class="font-semibold">設備代碼對照：</span>
+1-聲響/視像警報系統｜3-不含水的滅火劑自動固定裝置（火牛房）｜7-乾喉系統｜10-應急發電機｜11-應急照明系統｜12-出口燈｜13-警報系統｜15-感應器｜16-消防栓/喉轆｜24-滅火筒｜25-防火器具｜28-花灑｜33-街來水
+</div>
+
+<!-- 主清單表格：可新增行 -->
+<div class="mb-6">
+<div class="flex justify-between items-center mb-2">
+<h2 class="text-lg font-semibold">設備檢查清單</h2>
+<button onclick="addRow()" class="bg-blue-600 text-white px-3 py-1 rounded">新增一行</button>
+</div>
+<table class="w-full border-collapse border">
+<thead class="bg-gray-200">
+<tr>
+<th class="border p-2 w-40">FSI編號</th>
+<th class="border p-2 w-32">位置 Location</th>
+<th class="border p-2 w-24">狀態</th>
+<th class="border p-2 w-64">有缺點</th>
+<th class="border p-2 w-16">刪除</th>
+</tr>
+</thead>
+<tbody id="mainTableBody">
+<tr class="mainRow">
+<td class="border p-2 relative">
+<input type="text" class="fsiCode w-full border p-1 min-w-[12rem]" placeholder="輸入FSI編號或中文">
+<div class="fsiSuggestions hidden absolute left-2 right-2 top-full mt-1 bg-white border rounded shadow z-10 max-h-48 overflow-auto"></div>
+</td>
+<td class="border p-2"><input type="text" class="location w-full border p-1" placeholder="樓層/位置"></td>
+<td class="border p-2">
+<select class="status w-full border p-1">
+<option value=""></option>
+<option>正常</option>
+<option>不正常</option>
+</select>
+</td>
+<td class="border p-2"><input type="text" class="defect w-full border p-1" placeholder="輸入缺點內容"></td>
+<td class="border p-2 text-center"><button onclick="delRow(this)" class="text-red-600">×</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- 13 警鐘 / 手掣區域 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">13. 警鐘 / 手動報警掣</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 警鐘供電類型
+<select id="bellPower" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>AC</option><option>DC</option>
+</select>
+</div>
+<div>2. 手掣供電類型
+<select id="pullPower" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>AC</option><option>DC</option>
+</select>
+</div>
+<div>3. 控制箱類型
+<select id="ctrl13Type" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>普通</option><option>地址碼</option>
+</select>
+</div>
+<div>控制箱數量
+<input id="ctrl13Qty" class="w-full border p-1 mt-1" type="number">
+</div>
+<div>4. 內置電池
+<select id="batt13Has" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+容量(AH)
+<input id="batt13Ah" class="w-full border p-1 mt-1" type="number">
+</div>
+<div>5. 充電箱
+<select id="charger13Has" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+電池容量(AH)
+<input id="charger13Ah" class="w-full border p-1 mt-1" type="number">
+</div>
+</div>
+</div>
+
+<!-- 15 感應器 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">15. 煙/熱感應器</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 煙霧感應器
+<select id="smokeHas" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>2. 熱度感應器
+<select id="heatHas" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>3. 控制箱類型
+<select id="ctrl15Type" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>普通</option><option>地址碼</option>
+</select>
+數量 <input id="ctrl15Qty" type="number" class="border p-1 w-20">
+</div>
+<div>4. 內置電池
+<select id="batt15Has" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+容量(AH) <input id="batt15Ah" type="number" class="border p-1 w-20">
+</div>
+<div>5. 充電箱電流(A)
+<input id="charger15A" class="w-full border p-1 mt-1" type="number">
+電池容量(AH) <input id="charger15Ah" type="number" class="border p-1 w-20">
+</div>
+</div>
+</div>
+
+<!-- 16 喉轆 / 消防栓 / 水泵 / 水缸 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">16. 喉轆、消防栓、水泵及水缸</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 入水掣尺寸
+<select id="valveInSize" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>3/4吋</option><option>1吋</option>
+</select>
+數量 <input id="valveInQty" type="number" class="border p-1 w-20">
+</div>
+<div>2. 消防栓接頭
+<select id="tapType" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>吸入</option><option>圓牙</option>
+</select>
+</div>
+<div>3. 炮筒接頭
+<select id="gunType" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>吸入</option><option>圓牙</option>
+</select>
+</div>
+<div>4. 標準喉管尺寸
+<select id="hoseStd" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>3/4吋</option><option>1吋</option>
+</select>
+</div>
+<div>5. 炮筒喉尺寸
+<select id="hoseGun" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>1¼</option><option>1½</option><option>2</option><option>2½</option>
+</select>
+</div>
+<div>6. 氣昇系統
+<select id="airRise" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>7. 垃圾槽花灑
+<select id="chuteSpray" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>8. 喉轆盆類型
+<select id="reelType" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>固定</option><option>搖擺</option>
+</select>
+尺寸
+<select id="reelSize" class="border p-1 w-20">
+<option value=""></option>
+<option>18</option><option>22</option>
+</select>
+</div>
+<div>9. 中途喉尺寸
+<select id="midHose" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>3/4吋</option>
+</select>
+</div>
+<div>10.水泵位置
+<div class="mt-1">上水泵</div>
+<input placeholder="填入位置" id="pumpUpperLoc" class="w-full border p-1 mt-1">
+<div class="mt-2">中途泵</div>
+<input placeholder="填入位置" id="pumpMidLoc" class="w-full border p-1 mt-1">
+<div class="mt-2">消防泵</div>
+<input placeholder="填入位置" id="pumpFireLoc" class="w-full border p-1 mt-1">
+</div>
+<div>11.入水掣止回閥
+<select id="checkValveIn" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>12.水缸浮球閥尺寸
+<select id="floatValve" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>1½</option><option>2</option><option>3</option><option>4</option>
+</select>
+</div>
+<div>13.街來水喉尺寸
+<select id="mainsHose" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>2吋</option><option>3吋</option><option>4吋</option>
+</select>
+</div>
+</div>
+</div>
+
+<!-- 17 防火捲閘 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">17. 防火捲閘</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 閘門類型
+<select id="shutterType" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>趟閘</option><option>手動捲閘</option><option>電動捲閘</option>
+</select>
+</div>
+<div>2. 配套感應
+<select id="shutterSensor" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>煙霧頭</option><option>熱度頭</option>
+</select>
+</div>
+<div>3. 內置電池
+<select id="batt17Has" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>4. 充電箱電流(A)
+<input id="charger17A" class="border p-1 w-20">
+電池AH <input id="charger17Ah" class="border p-1 w-20">
+</div>
+</div>
+</div>
+
+<!-- 28 花灑系統 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">28. 自動花灑系統</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 入水掣尺寸
+<select id="sprInSize" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>3/4吋</option><option>1吋</option>
+</select>
+數量 <input id="sprInQty" type="number" class="border p-1 w-20">
+</div>
+<div>2. 控制閥尺寸
+<select id="sprCtrlSize" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>3吋</option><option>4吋</option><option>6吋</option>
+</select>
+數量 <input id="sprCtrlQty" type="number" class="border p-1 w-20">
+</div>
+<div>3. 流量計
+<select id="flowMeter" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+數量 <input id="flowQty" type="number" class="border p-1 w-20">
+</div>
+<div>4. 回水流量計
+<select id="returnFlow" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>5. 入水止回閥
+<select id="sprCheck" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>6. 花灑泵位置
+<div class="mt-1">上水泵</div>
+<input id="sprUpperPumpLoc" placeholder="填入位置" class="w-full border p-1 mt-1">
+<div class="mt-2">花灑泵</div>
+<input id="sprinklerPumpLoc" placeholder="填入位置" class="w-full border p-1 mt-1">
+</div>
+<div>7. 流水掣類型
+<select id="flowSwitch" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>上牙</option><option>及令</option>
+</select>
+</div>
+<div>8. 分層隔離閘
+<select id="zoneValve" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+</div>
+<div>9. 尾位測試點
+<select id="testPoint" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+位置 <input id="testLoc" class="w-full border p-1 mt-1">
+</div>
+<div>10.水缸浮球閥尺寸
+<select id="sprFloat" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>1½</option><option>2</option><option>3</option><option>4</option>
+</select>
+</div>
+<div>11.街來水喉尺寸
+<select id="sprMains" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>2吋</option><option>3吋</option><option>4吋</option>
+</select>
+</div>
+</div>
+</div>
+
+<!-- 總控制箱綜合 -->
+<div class="border rounded p-4 mb-6">
+<h3 class="font-bold text-red-700 mb-3">13/15/16/17/28 總控制箱綜合</h3>
+<div class="grid grid-cols-1 gap-3 question-grid">
+<div>1. 控制箱類型
+<select id="mainCtrlType" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>普通</option><option>地址碼</option>
+</select>
+</div>
+<div>2. 內置電池容量(AH)
+<input id="mainBattAh" class="w-full border p-1 mt-1">
+</div>
+<div>3. 充電箱
+<select id="mainChargerHas" class="w-full border p-1 mt-1">
+<option value=""></option>
+<option>有</option><option>無</option>
+</select>
+電池AH <input id="mainChargerAh" class="border p-1 w-20">
+</div>
+</div>
+</div>
+
+<!-- 操作按鈕 -->
+<div class="flex flex-col sm:flex-row gap-3 mb-4">
+<button onclick="exportTable()" class="bg-green-600 text-white px-5 py-2 rounded text-lg">匯出完整檢查表</button>
+<button onclick="copyOutput()" class="bg-blue-600 text-white px-5 py-2 rounded text-lg">複製輸出</button>
+<button onclick="shareOutput()" class="bg-cyan-600 text-white px-5 py-2 rounded text-lg">分享到手機</button>
+<button onclick="clearAll()" class="bg-gray-600 text-white px-5 py-2 rounded text-lg">清空所有填寫</button>
+</div>
+
+<!-- 匯出結果區 -->
+<div class="bg-gray-900 text-green-400 p-4 rounded print-area min-h-[300px]" id="outputBox">
+匯出內容將顯示於此，可全選複製、列印
+</div>
+</div>
+
+<script>
+const FSI_CODE_MAP = [
+{ code: "1", name: "聲響/視像警報系統" },
+{ code: "3", name: "不含水的滅火劑自動固定裝置" },
+{ code: "7", name: "乾喉系統" },
+{ code: "10", name: "應急發電機" },
+{ code: "11", name: "應急照明系統" },
+{ code: "12", name: "出口燈" },
+{ code: "13", name: "警報系統" },
+{ code: "15", name: "感應器" },
+{ code: "16", name: "消防栓/喉轆" },
+{ code: "24", name: "滅火筒" },
+{ code: "25", name: "防火器具" },
+{ code: "28", name: "花灑" },
+{ code: "33", name: "街來水" }
+];
+
+function enhanceSelectTiles(root = document){
+const selects = root.querySelectorAll("select");
+selects.forEach(select => {
+if(select.dataset.tileEnhanced === "1") return;
+
+const options = Array.from(select.options).filter(opt => (opt.value || opt.text).trim() !== "");
+if(options.length === 0) return;
+
+const tiles = document.createElement("div");
+tiles.className = "select-tiles";
+
+const syncActiveState = () => {
+const current = select.value;
+tiles.querySelectorAll(".select-tile").forEach(btn => {
+btn.classList.toggle("is-active", btn.dataset.value === current);
+});
+};
+
+options.forEach(option => {
+const value = option.value || option.text;
+const btn = document.createElement("button");
+btn.type = "button";
+btn.className = "select-tile";
+btn.dataset.value = value;
+btn.textContent = option.text;
+btn.addEventListener("click", () => {
+select.value = value;
+select.dispatchEvent(new Event("change", { bubbles: true }));
+syncActiveState();
+});
+tiles.appendChild(btn);
+});
+
+select.classList.add("hidden-select");
+select.setAttribute("aria-hidden", "true");
+select.tabIndex = -1;
+select.insertAdjacentElement("afterend", tiles);
+select.addEventListener("change", syncActiveState);
+syncActiveState();
+select.dataset.tileEnhanced = "1";
+});
+}
+
+function resolveFsiCode(raw){
+const input = (raw || "").trim();
+if(!input) return "";
+if(/^\d+$/.test(input)) return input;
+
+const exact = FSI_CODE_MAP.find(item => input === item.name || input === `${item.name} (${item.code})`);
+if(exact) return exact.code;
+
+const byCodeInBracket = input.match(/\((\d+)\)/);
+if(byCodeInBracket) return byCodeInBracket[1];
+
+const fuzzy = FSI_CODE_MAP.filter(item => item.name.includes(input));
+if(fuzzy.length === 1) return fuzzy[0].code;
+
+return input;
+}
+
+function getFsiMatches(keyword){
+const input = (keyword || "").trim();
+if(!input) return [];
+const normalized = input.toLowerCase();
+const exactCode = FSI_CODE_MAP.filter(item => item.code === input);
+const includesCode = FSI_CODE_MAP.filter(item => item.code.includes(input) && item.code !== input);
+const startsWithName = FSI_CODE_MAP.filter(item => item.name.startsWith(input));
+const includesName = FSI_CODE_MAP.filter(item => item.name.includes(input) && !item.name.startsWith(input));
+const mixed = FSI_CODE_MAP.filter(item => `${item.name} ${item.code}`.toLowerCase().includes(normalized));
+
+const ordered = [...exactCode, ...includesCode, ...startsWithName, ...includesName, ...mixed];
+const deduped = [];
+ordered.forEach(item => {
+if(!deduped.find(v => v.code === item.code)) deduped.push(item);
+});
+return deduped.slice(0, 8);
+}
+
+function hideFsiSuggestions(inputEl){
+const box = inputEl.closest("td")?.querySelector(".fsiSuggestions");
+if(!box) return;
+box.classList.add("hidden");
+box.innerHTML = "";
+}
+
+function renderFsiSuggestions(inputEl){
+const box = inputEl.closest("td")?.querySelector(".fsiSuggestions");
+if(!box) return;
+const matches = getFsiMatches(inputEl.value);
+if(matches.length === 0){
+hideFsiSuggestions(inputEl);
+return;
+}
+box.innerHTML = matches.map(item => `
+<button type="button" class="fsiSuggestionItem block w-full text-left px-2 py-1 hover:bg-gray-100" data-code="${item.code}">
+${item.name} (${item.code})
+</button>
+`).join("");
+box.classList.remove("hidden");
+}
+
+function bindFsiCodeSearch(){
+const tbody = document.getElementById("mainTableBody");
+if(!tbody) return;
+tbody.addEventListener("input", (event) => {
+const target = event.target;
+if(!target.classList || !target.classList.contains("fsiCode")) return;
+renderFsiSuggestions(target);
+});
+tbody.addEventListener("focusin", (event) => {
+const target = event.target;
+if(!target.classList || !target.classList.contains("fsiCode")) return;
+renderFsiSuggestions(target);
+});
+tbody.addEventListener("change", (event) => {
+const target = event.target;
+if(!target.classList || !target.classList.contains("fsiCode")) return;
+target.value = resolveFsiCode(target.value);
+hideFsiSuggestions(target);
+});
+tbody.addEventListener("blur", (event) => {
+const target = event.target;
+if(!target.classList || !target.classList.contains("fsiCode")) return;
+setTimeout(() => {
+target.value = resolveFsiCode(target.value);
+hideFsiSuggestions(target);
+}, 120);
+}, true);
+tbody.addEventListener("mousedown", (event) => {
+const optionBtn = event.target.closest(".fsiSuggestionItem");
+if(!optionBtn) return;
+const row = optionBtn.closest("tr");
+const input = row?.querySelector(".fsiCode");
+if(!input) return;
+input.value = optionBtn.dataset.code || "";
+hideFsiSuggestions(input);
+});
+
+document.addEventListener("click", (event) => {
+if(event.target.closest(".fsiCode") || event.target.closest(".fsiSuggestions")) return;
+document.querySelectorAll(".fsiCode").forEach(input => hideFsiSuggestions(input));
+});
+}
+
+bindFsiCodeSearch();
+enhanceSelectTiles();
+
+// 新增主清單行
+function addRow(){
+const tbody = document.getElementById("mainTableBody");
+const tr = document.createElement("tr");
+tr.className = "mainRow";
+tr.innerHTML = `
+<td class="border p-2 relative">
+<input type="text" class="fsiCode w-full border p-1 min-w-[12rem]" placeholder="輸入FSI編號或中文">
+<div class="fsiSuggestions hidden absolute left-2 right-2 top-full mt-1 bg-white border rounded shadow z-10 max-h-48 overflow-auto"></div>
+</td>
+<td class="border p-2"><input type="text" class="location w-full border p-1" placeholder="樓層/位置"></td>
+<td class="border p-2">
+<select class="status w-full border p-1">
+<option value=""></option>
+<option>正常</option>
+<option>不正常</option>
+</select>
+</td>
+<td class="border p-2"><input type="text" class="defect w-full border p-1" placeholder="輸入缺點內容"></td>
+<td class="border p-2 text-center"><button onclick="delRow(this)" class="text-red-600">×</button></td>
+`;
+tbody.appendChild(tr);
+enhanceSelectTiles(tr);
+}
+// 刪除行
+function delRow(btn){
+btn.closest("tr").remove();
+}
+// 清空全部
+function clearAll(){
+if(!confirm("確定清空所有填寫內容？無法復原")) return;
+document.querySelectorAll("input,textarea").forEach(el=>el.value="");
+document.querySelectorAll("select").forEach(sel => {
+sel.value = "";
+sel.dispatchEvent(new Event("change", { bubbles: true }));
+});
+document.getElementById("mainTableBody").innerHTML = `
+<tr class="mainRow">
+<td class="border p-2 relative">
+<input type="text" class="fsiCode w-full border p-1 min-w-[12rem]" placeholder="輸入FSI編號或中文">
+<div class="fsiSuggestions hidden absolute left-2 right-2 top-full mt-1 bg-white border rounded shadow z-10 max-h-48 overflow-auto"></div>
+</td>
+<td class="border p-2"><input type="text" class="location w-full border p-1" placeholder="樓層/位置"></td>
+<td class="border p-2">
+<select class="status w-full border p-1">
+<option value=""></option>
+<option>正常</option>
+<option>不正常</option>
+</select>
+</td>
+<td class="border p-2"><input type="text" class="defect w-full border p-1" placeholder="輸入缺點內容"></td>
+<td class="border p-2 text-center"><button onclick="delRow(this)" class="text-red-600">×</button></td>
+</tr>
+`;
+enhanceSelectTiles(document.getElementById("mainTableBody"));
+document.getElementById("outputBox").innerText = "已清空，請重新填寫";
+}
+
+// 匯出完整表格文字
+function exportTable(){
+const emptyText = "未填入";
+const textOrEmpty = (value) => {
+const normalized = (value ?? "").toString().trim();
+return normalized ? normalized : emptyText;
+};
+
+let out = "=====================================\n";
+out += "          FS251 消防裝置年檢記錄表\n";
+out += "=====================================\n";
+out += `大廈名稱：${textOrEmpty(document.getElementById("building").value)}\n`;
+out += `年檢日期：${textOrEmpty(document.getElementById("checkDate").value)}\n`;
+out += "\n";
+
+out += "【一、設備檢查清單】\n";
+out += "編號\t位置\t狀態\t有缺點\n";
+const rows = document.querySelectorAll(".mainRow");
+rows.forEach(r=>{
+const code = textOrEmpty(resolveFsiCode(r.querySelector(".fsiCode").value));
+const loc = textOrEmpty(r.querySelector(".location").value);
+const stat = textOrEmpty(r.querySelector(".status").value);
+const defect = textOrEmpty(r.querySelector(".defect").value);
+out += `${code}\t${loc}\t${stat}\t${defect}\n`;
+});
+out += "\n";
+
+// 13 警鐘手掣
+out += "【13. 警鐘 / 手動報警掣】\n";
+out += `1. 警鐘供電：${textOrEmpty(document.getElementById("bellPower").value)}\n`;
+out += `2. 手掣供電：${textOrEmpty(document.getElementById("pullPower").value)}\n`;
+out += `3. 控制箱類型：${textOrEmpty(document.getElementById("ctrl13Type").value)}，數量：${textOrEmpty(document.getElementById("ctrl13Qty").value)}\n`;
+out += `4. 內置電池：${textOrEmpty(document.getElementById("batt13Has").value)}，容量${textOrEmpty(document.getElementById("batt13Ah").value)}AH\n`;
+out += `5. 充電箱：${textOrEmpty(document.getElementById("charger13Has").value)}，電池${textOrEmpty(document.getElementById("charger13Ah").value)}AH\n\n`;
+
+// 15 感應器
+out += "【15. 煙/熱感應器】\n";
+out += `1. 煙霧頭：${textOrEmpty(document.getElementById("smokeHas").value)}\n`;
+out += `2. 熱度頭：${textOrEmpty(document.getElementById("heatHas").value)}\n`;
+out += `3. 控制箱：${textOrEmpty(document.getElementById("ctrl15Type").value)}，${textOrEmpty(document.getElementById("ctrl15Qty").value)}個\n`;
+out += `4. 內置電池：${textOrEmpty(document.getElementById("batt15Has").value)} ${textOrEmpty(document.getElementById("batt15Ah").value)}AH\n`;
+out += `5. 充電箱${textOrEmpty(document.getElementById("charger15A").value)}A，電池${textOrEmpty(document.getElementById("charger15Ah").value)}AH\n\n`;
+
+//16 喉轆水泵
+out += "【16. 喉轆、消防栓、水泵水缸】\n";
+out += `1. 入水掣${textOrEmpty(document.getElementById("valveInSize").value)}，共${textOrEmpty(document.getElementById("valveInQty").value)}個\n`;
+out += `2. 消防栓接頭：${textOrEmpty(document.getElementById("tapType").value)}\n`;
+out += `3. 炮筒接頭：${textOrEmpty(document.getElementById("gunType").value)}\n`;
+out += `4. 標準喉：${textOrEmpty(document.getElementById("hoseStd").value)}\n`;
+out += `5. 炮筒喉：${textOrEmpty(document.getElementById("hoseGun").value)}\n`;
+out += `6. 氣昇：${textOrEmpty(document.getElementById("airRise").value)}\n`;
+out += `7. 垃圾槽花灑：${textOrEmpty(document.getElementById("chuteSpray").value)}\n`;
+out += `8. 喉轆盆：${textOrEmpty(document.getElementById("reelType").value)} ${textOrEmpty(document.getElementById("reelSize").value)}\n`;
+out += `9. 中途喉：${textOrEmpty(document.getElementById("midHose").value)}\n`;
+out += `10.水泵位置：\n`;
+out += `   上水泵：${textOrEmpty(document.getElementById("pumpUpperLoc").value)}\n`;
+out += `   中途泵：${textOrEmpty(document.getElementById("pumpMidLoc").value)}\n`;
+out += `   消防泵：${textOrEmpty(document.getElementById("pumpFireLoc").value)}\n`;
+out += `11.入水止回閥：${textOrEmpty(document.getElementById("checkValveIn").value)}\n`;
+out += `12.水缸浮球閥：${textOrEmpty(document.getElementById("floatValve").value)}\n`;
+out += `13.街水喉：${textOrEmpty(document.getElementById("mainsHose").value)}\n\n`;
+
+//17 防火閘
+out += "【17. 防火捲閘】\n";
+out += `1. 閘門類型：${textOrEmpty(document.getElementById("shutterType").value)}\n`;
+out += `2. 配套感應：${textOrEmpty(document.getElementById("shutterSensor").value)}\n`;
+out += `3. 內置電池：${textOrEmpty(document.getElementById("batt17Has").value)}\n`;
+out += `4. 充電箱${textOrEmpty(document.getElementById("charger17A").value)}A，電池${textOrEmpty(document.getElementById("charger17Ah").value)}AH\n\n`;
+
+//28花灑
+out += "【28. 自動花灑系統】\n";
+out += `1. 入水掣${textOrEmpty(document.getElementById("sprInSize").value)} ×${textOrEmpty(document.getElementById("sprInQty").value)}\n`;
+out += `2. 控制閥${textOrEmpty(document.getElementById("sprCtrlSize").value)} ×${textOrEmpty(document.getElementById("sprCtrlQty").value)}\n`;
+out += `3. 流量計：${textOrEmpty(document.getElementById("flowMeter").value)}，${textOrEmpty(document.getElementById("flowQty").value)}個\n`;
+out += `4. 回水流量計：${textOrEmpty(document.getElementById("returnFlow").value)}\n`;
+out += `5. 入水止回閥：${textOrEmpty(document.getElementById("sprCheck").value)}\n`;
+out += `6. 花灑泵位置：\n`;
+out += `   上水泵：${textOrEmpty(document.getElementById("sprUpperPumpLoc").value)}\n`;
+out += `   花灑泵：${textOrEmpty(document.getElementById("sprinklerPumpLoc").value)}\n`;
+out += `7. 流水掣：${textOrEmpty(document.getElementById("flowSwitch").value)}\n`;
+out += `8. 分層閘：${textOrEmpty(document.getElementById("zoneValve").value)}\n`;
+out += `9. 尾位測點：${textOrEmpty(document.getElementById("testPoint").value)} 位置：${textOrEmpty(document.getElementById("testLoc").value)}\n`;
+out += `10.水缸浮球閥：${textOrEmpty(document.getElementById("sprFloat").value)}\n`;
+out += `11.街來水喉：${textOrEmpty(document.getElementById("sprMains").value)}\n\n`;
+
+//總控箱
+out += "【總控制箱綜合(13/15/16/17/28)】\n";
+out += `1. 控制箱型式：${textOrEmpty(document.getElementById("mainCtrlType").value)}\n`;
+out += `2. 內置電池：${textOrEmpty(document.getElementById("mainBattAh").value)}AH\n`;
+out += `3. 充電箱：${textOrEmpty(document.getElementById("mainChargerHas").value)}，電池${textOrEmpty(document.getElementById("mainChargerAh").value)}AH\n`;
+out += "=====================================\n";
+
+document.getElementById("outputBox").innerText = out;
+}
+
+async function copyOutput(){
+const output = document.getElementById("outputBox")?.innerText || "";
+if(!output || output === "匯出內容將顯示於此，可全選複製、列印"){
+alert("請先匯出內容，再複製到手機");
+return;
+}
+
+try{
+await navigator.clipboard.writeText(output);
+alert("已複製，可直接貼到手機訊息、備忘錄或通訊軟體");
+}catch(err){
+const textarea = document.createElement("textarea");
+textarea.value = output;
+textarea.setAttribute("readonly", "true");
+textarea.style.position = "fixed";
+textarea.style.left = "-9999px";
+document.body.appendChild(textarea);
+textarea.select();
+document.execCommand("copy");
+document.body.removeChild(textarea);
+alert("已複製，可直接貼到手機訊息、備忘錄或通訊軟體");
+}
+}
+
+async function shareOutput(){
+const output = document.getElementById("outputBox")?.innerText || "";
+if(!output || output === "匯出內容將顯示於此，可全選複製、列印"){
+alert("請先匯出內容，再分享到手機");
+return;
+}
+
+if(navigator.share){
+try{
+await navigator.share({
+title: "FS251 消防裝置年檢記錄表",
+text: output,
+});
+}catch(err){
+if(err?.name !== "AbortError"){
+alert("分享失敗，請改用複製輸出");
+}
+}
+return;
+}
+
+copyOutput();
+}
+</script>
+</body>
+</html>
